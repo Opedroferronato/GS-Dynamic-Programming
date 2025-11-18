@@ -1,0 +1,94 @@
+
+# ---------------------------------------------------------------
+# 1️⃣ Solução Greedy
+# ---------------------------------------------------------------
+def solve_greedy(pesos, valores, capacidade):
+    itens = list(zip(pesos, valores))
+    itens.sort(key=lambda x: x[1] / x[0], reverse=True)
+
+    valor_total = 0
+    capacidade_atual = capacidade
+
+    for peso, valor in itens:
+        if peso <= capacidade_atual:
+            valor_total += valor
+            capacidade_atual -= peso
+
+    return valor_total
+
+
+# ---------------------------------------------------------------
+# 2️⃣ Solução Recursiva
+# ---------------------------------------------------------------
+def solve_recursive(pesos, valores, capacidade, index=0):
+    if index == len(pesos) or capacidade <= 0:
+        return 0
+
+
+    opcao1 = solve_recursive(pesos, valores, capacidade, index + 1)
+
+
+    if pesos[index] <= capacidade:
+        opcao2 = valores[index] + solve_recursive(pesos, valores, capacidade - pesos[index], index + 1)
+        return max(opcao1, opcao2)
+
+    return opcao1
+
+
+# ---------------------------------------------------------------
+# 3️⃣ Programação Dinâmica Top-Down
+# ---------------------------------------------------------------
+def solve_dp_top_down(pesos, valores, capacidade, index=0, memo=None):
+    if memo is None:
+        memo = {}
+
+    if (index, capacidade) in memo:
+        return memo[(index, capacidade)]
+
+    if index == len(pesos) or capacidade <= 0:
+        return 0
+
+    opcao1 = solve_dp_top_down(pesos, valores, capacidade, index + 1, memo)
+
+    if pesos[index] <= capacidade:
+        opcao2 = valores[index] + solve_dp_top_down(
+            pesos, valores, capacidade - pesos[index], index + 1, memo
+        )
+        memo[(index, capacidade)] = max(opcao1, opcao2)
+    else:
+        memo[(index, capacidade)] = opcao1
+
+    return memo[(index, capacidade)]
+
+
+# ---------------------------------------------------------------
+# 4️⃣ Programação Dinâmica
+# ---------------------------------------------------------------
+def solve_dp_bottom_up(pesos, valores, capacidade):
+    n = len(pesos)
+    tabela = [[0] * (capacidade + 1) for _ in range(n + 1)]
+
+    for i in range(1, n + 1):
+        for cap in range(1, capacidade + 1):
+            if pesos[i - 1] <= cap:
+                incluir = valores[i - 1] + tabela[i - 1][cap - pesos[i - 1]]
+                nao_incluir = tabela[i - 1][cap]
+                tabela[i - 1][cap] = max(incluir, nao_incluir)
+            else:
+                tabela[i][cap] = tabela[i - 1][cap]
+
+    return tabela[n][capacidade]
+
+
+# ---------------------------------------------------------------
+# Execução de teste simples
+# ---------------------------------------------------------------
+if __name__ == "__main__":
+    pesos = [2, 3, 4, 5]
+    valores = [3, 4, 5, 8]
+    capacidade = 8
+
+    print("Resultado Greedy:", solve_greedy(pesos, valores, capacidade))
+    print("Resultado Recursiva:", solve_recursive(pesos, valores, capacidade))
+    print("Resultado DP Top-Down:", solve_dp_top_down(pesos, valores, capacidade))
+    print("Resultado DP Bottom-Up:", solve_dp_bottom_up(pesos, valores, capacidade))
